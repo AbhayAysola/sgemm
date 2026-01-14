@@ -6,7 +6,7 @@ void sgemm(float *M, float *N, float *P, int m, int n, int k) {
   cublasCreate(&handle);
   float alpha = 1.0;
   float beta = 0.0f;
-  cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, m, n, k, &alpha, M, n, N, k,
+  cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, k, m, n, &alpha, N, k, M, n,
               &beta, P, k);
   cublasDestroy(handle);
 }

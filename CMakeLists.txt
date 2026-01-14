@@ -21,7 +21,7 @@ set(CMAKE_CUDA_SEPERABLE_COMPILATION ON)
 add_library(common_main OBJECT src/main.cu)
 target_link_libraries(common_main PRIVATE gpu_config)
 
-set(KERNELS "naive" "tiled" "coarse")
+set(KERNELS "naive" "tiled" "register_tiled")
 
 foreach(kernel IN LISTS KERNELS)
   set(target_name "sgemm_${kernel}")

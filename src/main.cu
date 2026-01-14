@@ -6,8 +6,6 @@ void init_matrix(float *M, int m, int n) {
     M[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-int cdiv(int a, int b) { return (a + b - 1) / b; }
-
 float epsilon = 1e-4;
 
 bool verify_cpu(float *M, float *N, float *P, int m, int n, int k) {
@@ -63,12 +61,9 @@ int main(int argc, char **argv) {
   cudaMemcpy(M_d, M_h, sizeof(float) * m * n, cudaMemcpyHostToDevice);
   cudaMemcpy(N_d, N_h, sizeof(float) * n * k, cudaMemcpyHostToDevice);
 
-  dim3 grid_dim(cdiv(k, BLOCK_SIZE), cdiv(m, BLOCK_SIZE), 1);
-  dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE, 1);
-
   // warmup
   // TODO: increase number of warmups?
-  sgemm_kernel<<<grid_dim, block_dim>>>(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
+  sgemm(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
   cudaDeviceSynchronize();
 
   cudaMemcpy(P_h, P_d, sizeof(float) * m * k, cudaMemcpyDeviceToHost);
@@ -85,7 +80,7 @@ int main(int argc, char **argv) {
 
   cudaEventRecord(start);
   for (int i = 0; i < iterations; i++)
-    sgemm_kernel<<<grid_dim, block_dim>>>(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
+    sgemm(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
   cudaEventRecord(end);
   cudaEventSynchronize(end);
 
