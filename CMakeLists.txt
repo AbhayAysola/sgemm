@@ -26,7 +26,7 @@ target_link_libraries(common_main PRIVATE gpu_config)
 
 
 
-set(KERNELS "naive" "tiled" "register_tiled" "vectorized" "double_buffered")
+set(KERNELS "naive" "tiled" "register_tiled")
 
 foreach(kernel IN LISTS KERNELS)
   set(target_name "sgemm_${kernel}")

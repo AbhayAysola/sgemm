@@ -25,6 +25,7 @@ def benchmark(path, sizes, output_path):
     return df
 
 CACHE_DIR = "./.cache"
+os.makedirs(CACHE_DIR)
 BUILD_DIR = "./build"
 
 CUBLAS_BINARY_PATH = BUILD_DIR + "/sgemm_cublas"
