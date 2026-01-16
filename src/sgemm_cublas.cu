@@ -1,19 +1,13 @@
 #include "cublas_v2.h"
+#include "utils.cu"
 #include <iostream>
 
-void sgemm(float *M, float *N, float *P, int m, int n, int k) {
-  cublasHandle_t handle;
-  cublasCreate(&handle);
+void sgemm(float *M, float *N, float *P, int m, int n, int k,
+           cublasHandle_t handle) {
   float alpha = 1.0;
   float beta = 0.0f;
-  cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, k, m, n, &alpha, N, k, M, n,
+  cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, n, m, k, &alpha, N, k, M, n,
               &beta, P, k);
-  cublasDestroy(handle);
-}
-
-void init_matrix(float *M, int m, int n) {
-  for (int i = 0; i < m * n; i++)
-    M[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
 int main(int argc, char **argv) {
@@ -45,20 +39,30 @@ int main(int argc, char **argv) {
   cudaMemcpy(M_d, M_h, sizeof(float) * m * n, cudaMemcpyHostToDevice);
   cudaMemcpy(N_d, N_h, sizeof(float) * n * k, cudaMemcpyHostToDevice);
 
-  const int iterations = 50;
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+
+  const int warmup_iterations = 10;
+  for (int i = 0; i < warmup_iterations; i++)
+    sgemm(M_d, N_d, P_d, m, n, k, handle);
+
+  const int iterations = 100;
   cudaEvent_t start, end;
   cudaEventCreate(&start);
   cudaEventCreate(&end);
 
-  cudaEventRecord(start);
-  for (int i = 0; i < iterations; i++)
-    sgemm(M_d, N_d, P_d, m, n, k);
+  for (int i = 0; i < iterations; i++) {
+    if (i == iterations / 2)
+      cudaEventRecord(start);
+    flush_cache();
+    sgemm(M_d, N_d, P_d, m, n, k, handle);
+  }
   cudaEventRecord(end);
   cudaEventSynchronize(end);
 
   float ms;
   cudaEventElapsedTime(&ms, start, end);
-  float avg_time_ms = ms / iterations;
+  float avg_time_ms = ms / (iterations / 2);
 
   double flops = 2.0 * m * n * k;
   double gflops = (flops * 1e-9) / (avg_time_ms * 1e-3);
@@ -66,6 +70,7 @@ int main(int argc, char **argv) {
   std::cout << m << ',' << n << ',' << k << ',' << avg_time_ms << ',' << gflops
             << std::endl;
 
+  cublasDestroy(handle);
   cudaFree(M_d);
   cudaFree(N_d);
   cudaFree(P_d);

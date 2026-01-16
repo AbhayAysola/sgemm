@@ -1,7 +1,7 @@
 #include "./include/sgemm.cuh"
 
-const int BLOCK_SIZE = 32;
-const int TILE_SIZE = 8;
+const int BLOCK_SIZE = 64;
+const int TILE_SIZE = 4;
 
 __host__ __device__ int cdiv(int a, int b) { return (a + b - 1) / b; }
 

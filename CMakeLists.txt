@@ -14,14 +14,19 @@ endif()
 add_compile_options("$<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math;-O3>")
 
 add_library(gpu_config INTERFACE)
+add_library(utils OBJECT src/utils.cu)
 target_link_libraries(gpu_config INTERFACE cudart)
+target_link_libraries(gpu_config INTERFACE utils)
 
 set(CMAKE_CUDA_SEPERABLE_COMPILATION ON)
+
 
 add_library(common_main OBJECT src/main.cu)
 target_link_libraries(common_main PRIVATE gpu_config)
 
-set(KERNELS "naive" "tiled" "register_tiled")
+
+
+set(KERNELS "naive" "tiled" "register_tiled" "vectorized" "double_buffered")
 
 foreach(kernel IN LISTS KERNELS)
   set(target_name "sgemm_${kernel}")

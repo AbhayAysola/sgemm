@@ -1,10 +1,6 @@
 #include "./kernels/include/sgemm.cuh"
+#include "./utils.cu"
 #include <iostream>
-
-void init_matrix(float *M, int m, int n) {
-  for (int i = 0; i < m * n; i++)
-    M[i] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
 
 float epsilon = 1e-4;
 
@@ -63,7 +59,9 @@ int main(int argc, char **argv) {
 
   // warmup
   // TODO: increase number of warmups?
-  sgemm(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
+  const int warmup_iterations = 10;
+  for (int i = 0l; i < warmup_iterations; i++)
+    sgemm(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
   cudaDeviceSynchronize();
 
   cudaMemcpy(P_h, P_d, sizeof(float) * m * k, cudaMemcpyDeviceToHost);
@@ -73,20 +71,23 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-  const int iterations = 50;
+  const int iterations = 100;
   cudaEvent_t start, end;
   cudaEventCreate(&start);
   cudaEventCreate(&end);
 
-  cudaEventRecord(start);
-  for (int i = 0; i < iterations; i++)
+  for (int i = 0; i < iterations; i++) {
+    if (i == iterations / 2)
+      cudaEventRecord(start);
+    flush_cache();
     sgemm(M_d, N_d, P_d, m, n, k, 1.0, 0.0);
+  }
   cudaEventRecord(end);
   cudaEventSynchronize(end);
 
   float ms;
   cudaEventElapsedTime(&ms, start, end);
-  float avg_time_ms = ms / iterations;
+  float avg_time_ms = ms / (iterations / 2);
 
   double flops = 2.0 * m * n * k;
   double gflops = (flops * 1e-9) / (avg_time_ms * 1e-3);
