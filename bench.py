@@ -30,7 +30,7 @@ BUILD_DIR = "./build"
 
 CUBLAS_BINARY_PATH = BUILD_DIR + "/sgemm_cublas"
 CUBLAS_OUTPUT_PATH = CACHE_DIR + "/sgemm_cublas.csv"
-SIZES = [128, 512, 1024, 2048, 4096]
+SIZES = [512, 1024, 2048, 4096, 8192]
 
 for kernel in sys.argv[1:]:
     if kernel == "cublas":
@@ -58,7 +58,6 @@ plt.subplot(1, 2, 1)
 for kernel, df_kernel in dfs.items():
     plt.plot(df_kernel['Size'], df_kernel['GFLOPS'], marker='o', label=kernel)
 
-plt.plot(cublas_df['Size'], cublas_df['GFLOPS'], 'k--', marker='x', label='cuBLAS (Baseline)')
 plt.title('SGEMM Absolute Performance')
 plt.xlabel('Matrix Dimension (N x N)')
 plt.ylabel('GFLOPS (Higher is better)')
