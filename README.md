@@ -68,7 +68,9 @@ For benchmarking, (might take a bit of time when you run this)
 The results get cached though so you can benchmark only the kernels that are changed.
 
 Or if you just want to see the results here they are.
-IMAGE HERE
+
+![forest](benchmark.png)
+
 ```bash
 # python bench.py [kernels that you want to benchmark - cublas naive tiled register_tiled partially_vectorized vectorized double_buffered]
 python bench.py cublas vectorized register_tiled 
