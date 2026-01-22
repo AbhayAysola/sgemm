@@ -92,3 +92,5 @@ https://siboehm.com/articles/22/CUDA-MMM
 https://lumetta.web.engr.illinois.edu/508/slides/lecture4-x4.pdf\
 
 https://salykova.github.io/sgemm-gpu
+
+Note: I used AI for a part of the Python benchmarking code and the Cmake configuration.
